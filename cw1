@@ -4,30 +4,93 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kalkulator</title>
+<style>
+  .loader {
+    border: 4px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 4px solid #3498db;
+    width: 20px;
+    height: 20px;
+    animation: spin 2s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
 <script>
-function calculate() {
-  const inputs = document.querySelectorAll('input');
-  const values = Array.from(inputs).map(input => Number(input.value) || 0);
-  const sum = values.reduce((acc, value) => acc + value, 0);
-  const average = sum / values.length;
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  
-  document.getElementById('sum').textContent = sum;
-  document.getElementById('average').textContent = average;
-  document.getElementById('min').textContent = min;
-  document.getElementById('max').textContent = max;
+class Kalkulator {
+  constructor() {
+    this.inputs = [];
+    this.inputContainer = document.getElementById('inputContainer');
+    this.resultsContainer = document.getElementById('results');
+    this.loader = document.getElementById('loader');
+    this.sumEl = document.getElementById('sum');
+    this.averageEl = document.getElementById('average');
+    this.minEl = document.getElementById('min');
+    this.maxEl = document.getElementById('max');
+  }
+
+  addInput() {
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.oninput = () => this.calculate();
+    input.onblur = () => this.validateInput(input);
+    this.inputContainer.appendChild(input);
+    this.inputs.push(input);
+  }
+
+  removeInput() {
+    if (this.inputs.length > 0) {
+      const input = this.inputs.pop();
+      this.inputContainer.removeChild(input);
+      this.calculate();
+    }
+  }
+
+  validateInput(input) {
+    if (isNaN(input.value) || input.value === '') {
+      this.loader.style.display = 'inline-block';
+      this.resultsContainer.style.display = 'none';
+    } else {
+      this.loader.style.display = 'none';
+      this.resultsContainer.style.display = 'block';
+      this.calculate();
+    }
+  }
+
+  calculate() {
+    const values = this.inputs.map(input => Number(input.value) || 0);
+    const sum = values.reduce((acc, value) => acc + value, 0);
+    const average = sum / values.length;
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+
+    this.sumEl.textContent = sum;
+    this.averageEl.textContent = average;
+    this.minEl.textContent = min;
+    this.maxEl.textContent = max;
+  }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const kalkulator = new Kalkulator();
+
+  document.getElementById('addButton').onclick = () => kalkulator.addInput();
+  document.getElementById('removeButton').onclick = () => kalkulator.removeInput();
+});
 </script>
 </head>
 <body>
   <div>
-    <label>Wartość 1: <input type="number" oninput="calculate()"></label><br>
-    <label>Wartość 2: <input type="number" oninput="calculate()"></label><br>
-    <label>Wartość 3: <input type="number" oninput="calculate()"></label><br>
-    <label>Wartość 4: <input type="number" oninput="calculate()"></label><br>
+    <label>Liczba pól: <input type="number" id="inputCount" oninput="addInputs()"></label>
+    <button id="addButton">Dodaj pole</button>
+    <button id="removeButton">Usuń pole</button>
   </div>
-  <div>
+  <div id="inputContainer"></div>
+  <div id="loader" class="loader" style="display:none;"></div>
+  <div id="results">
     <p>Suma: <span id="sum">0</span></p>
     <p>Średnia: <span id="average">0</span></p>
     <p>Min: <span id="min">0</span></p>
